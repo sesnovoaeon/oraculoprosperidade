@@ -1,0 +1,19 @@
+ORÁCULO DA PROSPERIDADE — V8 FINAL
+
+VALIDAÇÕES REALIZADAS
+- 22 Arcanos Maiores reais do Tarô Rider–Waite–Smith.
+- Nomes canônicos em português: O Louco, O Mago, A Sacerdotisa, A Imperatriz,
+  O Imperador, O Hierofante, Os Enamorados, O Carro, A Força, O Eremita,
+  A Roda da Fortuna, A Justiça, O Enforcado, A Morte, A Temperança, O Diabo,
+  A Torre, A Estrela, A Lua, O Sol, O Julgamento e O Mundo.
+- Nenhuma ocorrência de “Ponte de Júpiter”, “Torre de Moedas” ou nomes inventados.
+- Imagens apontam para reproduções reais do Rider–Waite–Smith.
+- Seção da Danielle refeita em duas colunas, sem texto sobreposto à fotografia.
+- Fotografia limpa incorporada no próprio arquivo.
+- Quatro prints reais dos depoimentos incorporados e ampliáveis.
+- Depoimentos contextualizados como trabalhos coletivos de Mammon.
+- JavaScript validado sem erro de sintaxe.
+- Layout mobile inspecionado nas telas de cartas, Danielle e depoimentos.
+
+PUBLICAÇÃO
+Substituir o arquivo index.html existente na raiz do repositório.
