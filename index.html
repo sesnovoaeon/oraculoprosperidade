@@ -109,6 +109,21 @@ main{width:min(890px,calc(100% - 22px));margin:clamp(18px,4vh,42px) auto 32px;fl
  .testimonial-v8-image img{height:auto;max-height:72vh}
 }
 
+
+/* V9 — curiosidade após a tiragem e seleção oracular orientada pela dor */
+.destiny-note{border:1px solid rgba(201,162,75,.36);background:linear-gradient(145deg,rgba(201,162,75,.09),rgba(0,0,0,.18));border-radius:17px;padding:18px 19px;margin:20px 0;line-height:1.62;color:#e8dcc7}
+.destiny-note b{color:var(--gold2)}
+.curiosity-bridge{position:relative;border:1px solid var(--gold);border-radius:19px;padding:22px;margin:22px 0;background:radial-gradient(circle at 85% 0%,rgba(201,162,75,.15),transparent 38%),rgba(0,0,0,.22);box-shadow:0 16px 45px rgba(0,0,0,.28)}
+.curiosity-bridge:before{content:"✦";position:absolute;right:18px;top:13px;color:rgba(242,221,162,.35);font-size:27px}
+.curiosity-bridge .curiosity-kicker{display:block;color:var(--gold);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+.curiosity-bridge h3{font-size:clamp(23px,3.4vw,31px);line-height:1.28;color:#fff0cf;margin-right:22px}
+.curiosity-bridge p{color:#d9cdb8;line-height:1.62;margin:11px 0 0}
+.authority-v8-photo img{object-position:center 10%}
+@media(max-width:760px){
+ .curiosity-bridge{padding:19px 17px}
+ .curiosity-bridge h3{margin-right:14px}
+}
+
 </style>
 </head>
 <body>
@@ -202,13 +217,51 @@ const STEPS=['Abertura','Advertorial I','Dor central','Emoção','Duração','Pr
 const state={step:0,answers:{},spread:[],card:null,cardPos:null,lead:{},product:null,payment:null,utm:{}};
 const app=document.getElementById('app'),progress=document.getElementById('progress'),phase=document.getElementById('phase');
 function captureUtm(){const p=new URLSearchParams(location.search);['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>{if(p.get(k))state.utm[k]=p.get(k)})}
-function track(event,data={}){window.dataLayer=window.dataLayer||[];window.dataLayer.push({event,...data,...state.utm});console.info('[DAN-001 V8]',event,data)}
-function save(){try{localStorage.setItem('dan001v8',JSON.stringify(state))}catch(e){}}
-function restore(){try{const s=JSON.parse(localStorage.getItem('dan001v8')||'null');if(s)Object.assign(state,s)}catch(e){}}
-function reset(){localStorage.removeItem('dan001v8');Object.assign(state,{step:0,answers:{},spread:[],card:null,cardPos:null,lead:{},product:null,payment:null,utm:{}});captureUtm();render()}
+function track(event,data={}){window.dataLayer=window.dataLayer||[];window.dataLayer.push({event,...data,...state.utm});console.info('[DAN-001 V9]',event,data)}
+function save(){try{localStorage.setItem('dan001v9',JSON.stringify(state))}catch(e){}}
+function restore(){try{const s=JSON.parse(localStorage.getItem('dan001v9')||'null');if(s)Object.assign(state,s)}catch(e){}}
+function reset(){localStorage.removeItem('dan001v9');Object.assign(state,{step:0,answers:{},spread:[],card:null,cardPos:null,lead:{},product:null,payment:null,utm:{}});captureUtm();render()}
 function esc(s){return String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c))}
 function shuffled(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function ensureSpread(){if(!state.spread.length)state.spread=shuffled(CARDS).slice(0,3)}
+function cardById(id){return CARDS.find(c=>c.id===id)}
+function pickCard(ids,used=[]){
+  const available=shuffled(ids).map(cardById).filter(c=>c&&!used.includes(c.id));
+  return available[0]||shuffled(CARDS).find(c=>!used.includes(c.id))
+}
+function buildCuratedSpread(){
+  const pain=state.answers.pain||'growth';
+  const emotion=state.answers.emotion||'frustration';
+  const maps={
+    flow:{
+      shadow:['wheel','devil','moon'],
+      turning:['justice','death','temperance'],
+      solution:['emperor','world','sun']
+    },
+    growth:{
+      shadow:['hanged-man','hermit','tower'],
+      turning:['chariot','judgement','magician'],
+      solution:['sun','empress','world']
+    },
+    pressure:{
+      shadow:['tower','devil','moon'],
+      turning:['justice','strength','death'],
+      solution:['star','temperance','emperor']
+    }
+  };
+  const emotional={
+    anxiety:{shadow:['moon','tower','devil'],solution:['star','temperance','strength']},
+    fear:{shadow:['devil','moon','hanged-man'],solution:['strength','justice','emperor']},
+    frustration:{shadow:['hanged-man','wheel','tower'],solution:['magician','sun','chariot']}
+  };
+  const map=maps[pain]||maps.growth;
+  const emo=emotional[emotion]||emotional.frustration;
+  const used=[];
+  const first=pickCard([...emo.shadow,...map.shadow],used); used.push(first.id);
+  const second=pickCard(map.turning,used); used.push(second.id);
+  const third=pickCard([...emo.solution,...map.solution],used);
+  return shuffled([first,second,third]);
+}
+function ensureSpread(){if(!state.spread.length)state.spread=buildCuratedSpread()}
 function next(){if(state.step<STEPS.length-1){state.step++;save();render()}}
 function jump(n){state.step=Math.max(0,Math.min(STEPS.length-1,Number(n)||0));save();render()}
 function optData(key,id){return DATA[key].options.find(o=>o.id===id)}
@@ -255,14 +308,40 @@ function openProof(key){
 function closeProof(){const modal=document.getElementById('testimonialModal');if(modal)modal.classList.remove('open');document.body.style.overflow=''}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeProof()});
 function chooseCard(i){if(state.card)return;state.card=state.spread[i];state.cardPos=i+1;save();track('card_selected',{card:state.card.id,position:i+1});const bs=[...document.querySelectorAll('.flip')];bs.forEach((b,j)=>j===i?b.classList.add('flipped'):b.classList.add('dim'));setTimeout(()=>{state.step=8;save();render()},950)}
-function newSpread(){state.spread=shuffled(CARDS).slice(0,3);state.card=null;state.cardPos=null;save();render()}
+function newSpread(){state.spread=buildCuratedSpread();state.card=null;state.cardPos=null;save();render()}
 function submitLead(){const name=document.getElementById('name')?.value.trim(),phone=document.getElementById('phone')?.value.replace(/\D/g,''),consent=document.getElementById('consent')?.checked,err=document.getElementById('formError');if(name.length<2||phone.length<10||!consent){err.textContent='Preencha nome, WhatsApp com DDD e marque o consentimento.';return}state.lead={name,phone};save();track('lead_submitted',{name,phone});next()}
 function chooseProduct(id){state.product=id;save();track('product_selected',{product:id,recommended:recommended()});next()}
 function choosePayment(id){state.payment=id;save();track('payment_selected',{payment:id,product:state.product});render()}
 function productInfo(){if(state.product==='essential')return {name:'Leitura Financeira Essencial',price:'R$ 67'};if(state.product==='complete')return {name:'Consulta de Vida Financeira',price:'R$ 97'};return {name:'Consulta Completa + Ritual de Abertura de Caminhos',price:CONFIG.comboPrice}}
 function message(){const p=profile(),c=state.card||CARDS[0],prod=productInfo();return `Olá, Danielle. Concluí o Oráculo da Prosperidade e escolhi continuar.\n\nNome: ${state.lead.name||'[nome]'}\nOpção: ${prod.name}\nInvestimento: ${prod.price}\nForma de pagamento: ${state.payment==='pix'?'Pix':state.payment==='card'?'Cartão':'a confirmar'}\nCarta: ${c.name}\nDiagnóstico predominante: ${p.name}\nSituação relatada: ${label('pain')}\nObjetivo: ${label('desired')}\n\nEstou enviando o comprovante de investimento em seguida. Agora preciso apenas combinar o horário da consulta.`}
 function updatePhase(){const n=state.step;const phases=n<2?'Abertura':n<9?'Sua tiragem':n<15?'Aprofundamento':n<21?'Confiança e direção':n<25?'Seu diagnóstico':'Próximo passo';phase.textContent=phases;progress.style.width=`${(n+1)/STEPS.length*100}%`}
-function render(){ensureSpread();updatePhase();let h='';switch(state.step){
+function curiosityForCurrentReading(){
+  const pain=state.answers.pain;
+  const card=state.card||CARDS[0];
+  const base={
+    flow:{
+      before:'A carta revelou o que acontece quando o dinheiro chega. Ainda falta enxergar o ponto em que ele perde direção, se dispersa ou deixa de se transformar em segurança.',
+      question:'E se o seu bloqueio não estiver em ganhar mais, mas em um padrão invisível que decide o destino do dinheiro antes mesmo de você perceber?'
+    },
+    growth:{
+      before:'A carta mostrou que existe força e movimento, mas também um ponto de interrupção. É nesse ponto, geralmente repetido de forma automática, que o esforço deixa de virar crescimento.',
+      question:'O que acontece dentro de você exatamente quando uma oportunidade começa a se abrir — e por que esse instante pode estar definindo até onde você consegue avançar?'
+    },
+    pressure:{
+      before:'A carta tocou a urgência visível. Ainda falta revelar o mecanismo silencioso que transforma pressão em decisões defensivas, adiamentos ou escolhas que mantêm o mesmo ciclo.',
+      question:'E se a saída não depender apenas de pagar a próxima conta, mas de reconhecer o padrão que faz a urgência voltar com outra forma?'
+    }
+  }[pain]||{
+    before:'A carta revelou a camada mais visível. Agora falta reconhecer o mecanismo que mantém o ciclo ativo mesmo quando você tenta agir de outro modo.',
+    question:'Qual padrão pode estar conduzindo suas decisões sem que você perceba?'
+  };
+  return {
+    before:base.before,
+    question:base.question,
+    destiny:`Entre vinte e dois Arcanos Maiores, ${card.name} foi a carta que encontrou a situação que você descreveu. O valor da leitura está menos em “acaso” e mais no modo preciso como o símbolo toca a experiência que você já vive.`
+  }
+}
+function render(){if(state.step>=7)ensureSpread();updatePhase();let h='';switch(state.step){
 case 0:h=`<div class="center"><div class="eyebrow">Experiência gratuita · SES Novo Aeon</div><h1>O que está <span class="gold">bloqueando o fluxo</span> da sua vida financeira?</h1><p class="lead center">Escolha uma entre três cartas e receba uma leitura inicial que relaciona seu símbolo ao padrão que você vive hoje.</p><div class="preview-cards"><div class="mini-card"></div><div class="mini-card"></div><div class="mini-card"></div></div><button class="btn btn-primary" data-testid="start" onclick="next()">INICIAR MINHA TIRAGEM</button><div class="price-note">✦ Tiragem inicial gratuita · opções pagas a partir de R$ 67 aparecem somente após o diagnóstico</div><p class="micro">Você verá valores e formatos completos antes de decidir avançar.</p></div>`;break;
 case 1:h=`<div class="article"><div class="article-head">VIDA FINANCEIRA · CONTEÚDO PATROCINADO</div><div class="article-body"><div class="article-meta">Especial SES Novo Aeon · Padrões, decisões e reorganização</div><h2>Por que algumas pessoas trabalham mais, ganham mais e ainda sentem que nunca conseguem avançar?</h2><p>Nem toda dificuldade financeira nasce apenas da falta de esforço. Em muitos casos, o problema se mantém porque a pessoa repete decisões diferentes movidas pelo mesmo medo, pela mesma urgência ou pela mesma dispersão.</p><p>O dinheiro muda de valor, a situação muda de nome, mas a sensação permanece: correr muito, aliviar uma pressão e logo encontrar outra.</p><div class="article-quote">Quando o mesmo ciclo retorna, a pergunta deixa de ser “por que isso aconteceu?” e passa a ser “qual padrão continua conduzindo minhas decisões?”</div><div class="article-signal"><span>✦</span><div><b>O Oráculo começa com três perguntas rápidas.</b><br>Depois, você escolhe uma carta e recebe significado, tendência simbólica e orientação.</div></div><button class="btn btn-primary" data-testid="article1-next" onclick="next()">DESCOBRIR O PADRÃO POR TRÁS DA MINHA SITUAÇÃO</button></div></div>`;break;
 case 2:h=qScreen('pain','Comece pela sua dor real');break;
@@ -290,13 +369,20 @@ case 8:{const c=state.card||state.spread[0];h=`<div class="eyebrow">Sua carta re
 <div class="warning"><b>Ponto de atenção</b><br>${c.risk}.</div>
 <p class="card-source">A tendência é interpretativa e não constitui promessa de resultado, aconselhamento financeiro ou destino imutável.</p></div></div>
 <button class="btn btn-primary" data-testid="card-result-next" onclick="next()">ENTENDER POR QUE ESSA CARTA FALA COMIGO</button>`;break}
-case 9:{const c=state.card||CARDS[0];h=`<div class="eyebrow">A carta encontrou a sua história</div>
+case 9:{const c=state.card||CARDS[0],cur=curiosityForCurrentReading();h=`<div class="eyebrow">A carta encontrou a sua história</div>
 <h2>${c.name} não apareceu isolada. Ela encontrou exatamente o padrão que você descreveu.</h2>
+<div class="destiny-note"><b>Por que isso parece tão preciso?</b><br>${cur.destiny}</div>
 <div class="insight"><h3>O espelho entre carta e experiência</h3>
 <p class="echo">Você relatou <strong>${esc(label('pain').toLowerCase())}</strong>, acompanhado de <strong>${esc(label('emotion').toLowerCase())}</strong>, e reconheceu que isso acontece <strong>${esc(label('duration').toLowerCase())}</strong>. Nesse contexto, ${c.name} aponta para <strong>${esc(c.profile.toLowerCase())}</strong>.</p>
 <p class="echo">${c.reveals}</p></div>
 <div class="forecast"><b>A primeira virada começa aqui:</b><br>${c.guidance}</div>
-<button class="btn btn-primary" onclick="next()">APROFUNDAR O MECANISMO POR TRÁS DISSO</button>`;break}
+<div class="curiosity-bridge">
+<span class="curiosity-kicker">A leitura ainda mostrou apenas a primeira camada</span>
+<p>${cur.before}</p>
+<h3>${cur.question}</h3>
+<p>As próximas respostas vão revelar o comportamento, a crença e a reação que mantêm esse ciclo — e mostrar por que algumas tentativas aliviam o problema sem realmente encerrá-lo.</p>
+</div>
+<button class="btn btn-primary" onclick="next()">SIM, QUERO REVELAR O PADRÃO OCULTO</button>`;break}
 case 10:h=qScreen('pattern','Como você decide quando algo pode mudar',`A carta ${state.card?.name||''} apontou: <b>${esc(state.card?.profile||'')}</b>. Agora identifique o comportamento que aparece diante de uma possibilidade.`);break;
 case 11:h=qScreen('attempt','O que você já tentou',`Você não chegou até aqui sem agir. A questão é descobrir por que o esforço ainda não produziu a mudança desejada.`);break;
 case 12:h=qScreen('desired','O estado que você quer construir',`Você reconheceu: <b>${esc(label('pattern'))}</b>. Agora escolha o que precisa existir no lugar desse padrão.`);break;
@@ -310,7 +396,7 @@ case 13:h=`<div class="article"><div class="article-head">ANÁLISE ESPECIAL · C
 <button class="btn btn-primary" onclick="next()">CONHECER QUEM APROFUNDA ESSA LEITURA</button></div></div>`;break;
 case 14:h=`<div class="authority-v8">
 <div class="authority-v8-photo">
-<img src="${ASSETS.dani}" alt="Danielle Fernandes">
+<img src="https://static.wixstatic.com/media/3be709_e857b2e2b65e4fa29e5c297b50738453~mv2.jpeg/v1/crop/x_7%2Cy_59%2Cw_1078%2Ch_1437/fill/w_980%2Ch_1306%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_avif%2Cquality_auto/WhatsApp%20Image%202026-04-27%20at%2014_00_42.jpeg" alt="Danielle Fernandes — SES Novo Aeon" loading="eager" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${ASSETS.dani}'">
 <div class="authority-v8-id"><b>Danielle Fernandes</b><span>CEO da SES Novo Aeon · Mestra formada pela Escola Internacional de Magia · Sacerdotisa de Paimon · Mentora e oraculista</span></div>
 </div>
 <div class="authority-v8-content">

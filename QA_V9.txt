@@ -1,0 +1,27 @@
+ORÁCULO DA PROSPERIDADE — V9
+
+ALTERAÇÕES DESTA VERSÃO
+
+1. A primeira tiragem agora usa uma composição orientada pela dor declarada:
+   - uma carta que espelha tensão, medo, interrupção ou repetição;
+   - uma carta de virada e reorganização;
+   - uma carta de solução, abertura ou consolidação.
+   Todas continuam sendo Arcanos Maiores reais do Rider–Waite–Smith.
+
+2. Após a leitura inicial, foi criada uma ponte de curiosidade personalizada:
+   - explica que a primeira carta mostrou apenas a camada visível;
+   - relaciona carta, dor, emoção e duração;
+   - apresenta uma pergunta diferente conforme a dor declarada;
+   - conduz para o aprofundamento com o CTA:
+     “SIM, QUERO REVELAR O PADRÃO OCULTO”.
+
+3. A seção de Danielle usa a fotografia institucional padrão publicada
+   na seção “Quem somos” do site oficial da SES Novo Aeon.
+
+4. Todo o restante do funil V8 foi preservado.
+
+VALIDAÇÕES
+- JavaScript validado sem erro de sintaxe.
+- Nenhuma carta inventada.
+- 22 Arcanos Maiores canônicos preservados.
+- Nome final do arquivo: index.html.
